@@ -1,25 +1,35 @@
 import pandas as pd 
 import argparse
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.svm import LinearSVC
+# import seaborn as sns
+# import matplotlib.pyplot as plt
+from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from util.preprocess import preprocess
 from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import TomekLinks
+from imblearn.combine import SMOTETomek
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report 
+from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.feature_selection import mutual_info_classif
 from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
 from sklearn.linear_model import LogisticRegression
 
 
-def oversampling(X_train, Y_train):
+def oversampling(X, Y):
     sm = SMOTE(random_state=42)
-    X_train, Y_train = sm.fit_resample(X_train, Y_train)
-    return X_train, Y_train
+    X, Y = sm.fit_resample(X, Y)
+    return X, Y
 
+def undersampling(X, Y):
+    tl = TomekLinks()
+    X, Y = tl.fit_resample(X, Y)
+    return X, Y
 
+def combine_sampling(X, Y):
+    smt = SMOTETomek(random_state=42)
+    X, Y = smt.fit_resample(X, Y)
+    return X, Y
 
 def plot_correlation_matrix(data):
     plt.figure(figsize=(10,10))
@@ -50,7 +60,7 @@ def mutual_info(X, Y):
     mi = pd.Series(mi)
     mi.index = X.columns
     mi = mi.sort_values(ascending=False)
-    mi.to_csv('mutual_info.csv')
+    # mi.to_csv('mutual_info.csv')
     print(mi)
 
 def main():
@@ -69,19 +79,47 @@ def main():
     Y = data['label']
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.30, random_state=42)
 
+    '''Oversampling the data'''
     X_train, Y_train = oversampling(X_train, Y_train)
-
-    # model = model_randomforest(X_train, Y_train)
+    # model = model_randomforest(X_over, Y_over)
     # Y_pred = model.predict(X_test)
+    # print('\nClassification report Random Forest (Oversampling):\n')
     # print(classification_report(Y_test, Y_pred))
 
-    '''Feature selection'''
-    model = LinearSVC(C=1, dual = False, random_state=42)
-    efs = EFS(model, min_features=1, max_features=12, scoring='f1', cv=5, print_progress=True)
-    efs = efs.fit(X_train, Y_train)
+    
+    model = LogisticRegression(max_iter=1000, random_state=42)
+    model = model.fit(X_train, Y_train)
+    y_pred = model.predict(X_test)
+    print('\nClassification report Logistic Regression:\n')
+    print(classification_report(Y_test, y_pred))
+    print(f'\nROC AUC Logistic Regression: {roc_auc_score(y_score=y_pred,y_true=Y_test)}\n')
+
+
+    '''Exhaustive Feature Selection (EFS)'''
+    efs = EFS(model, min_features=1, max_features=5, scoring='roc_auc', cv=5)
+    from imblearn.over_sampling import SMOTE
+    from imblearn.pipeline import Pipeline
+    from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import cross_val_score, StratifiedKFold
+
+    # Defina o modelo
+    model = LogisticRegression()
+
+    # Defina o método de oversampling
+    smote = SMOTE()
+
+    # Crie uma pipeline com o método de oversampling e o modelo
+    pipeline = Pipeline([('SMOTE', smote), ('Random Forest', model)])
+
+    # Defina o seletor de recursos
+    efs = EFS(pipeline, min_features=1, max_features=5, scoring='roc_auc', cv=5)
+
+    # Ajuste o seletor de recursos aos dados
+    efs = efs.fit(X, Y)
+
+    # Imprima as melhores características encontradas
     print('Best features:', efs.best_idx_)
-    print('Best score:', efs.best_score_)
-    print('Best subset:', efs.best_feature_names_)
 
 if __name__ == "__main__":
     main()
