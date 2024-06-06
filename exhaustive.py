@@ -14,27 +14,26 @@ Y = data['label']
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
 
 # Defina o modelo
-model = LogisticRegression()
+model = LogisticRegression(max_iter=1000, random_state=42)
 
 # Defina o método de oversampling
-smote = SMOTE()
+smote = SMOTE(random_state=42)
 
 # Crie uma pipeline com o método de oversampling e o modelo
 pipeline = Pipeline([('SMOTE', smote), ('Logistic Regression', model)])
 
 # Defina o seletor de recursos
-efs = EFS(pipeline, min_features=1, max_features=2, scoring='roc_auc', cv=5)
-
-# Ajuste o seletor de recursos aos dados de treinamento
+efs = EFS(pipeline, min_features=1, max_features=12, scoring='roc_auc', cv=5,n_jobs=1)
 efs = efs.fit(X_train, y_train)
 
 # Imprima as melhores características encontradas
 print('Best features:', efs.best_idx_)
 print('Best features names:', efs.best_feature_names_)
+print(f'Best score: {efs.best_score_}')
 
 # Avalie o desempenho no conjunto de teste usando as melhores características (opcional)
-X_train_selected = X_train.iloc[:, list(efs.best_idx_)]
-X_test_selected = X_test.iloc[:, list(efs.best_idx_)]
-pipeline.fit(X_train_selected, y_train)
-test_score = pipeline.score(X_test_selected, y_test)
-print('Test score (roc_auc):', test_score)
+# X_train_selected = X_train.iloc[:, list(efs.best_idx_)]
+# X_test_selected = X_test.iloc[:, list(efs.best_idx_)]
+# pipeline.fit(X_train_selected, y_train)
+# test_score = pipeline.score(X_test_selected, y_test)
+# print('Test score (roc_auc):', test_score)

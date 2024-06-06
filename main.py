@@ -76,6 +76,7 @@ def main():
     
     '''Splitting the data into training and testing sets.'''
     X = data.drop(columns=['commit','label'])
+    # X =  data[['number_unique_changes','lines_of_code_added']]
     Y = data['label']
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.30, random_state=42)
 
