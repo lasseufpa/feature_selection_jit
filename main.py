@@ -95,31 +95,5 @@ def main():
     print(f'\nROC AUC Logistic Regression: {roc_auc_score(y_score=y_pred,y_true=Y_test)}\n')
 
 
-    '''Exhaustive Feature Selection (EFS)'''
-    efs = EFS(model, min_features=1, max_features=5, scoring='roc_auc', cv=5)
-    from imblearn.over_sampling import SMOTE
-    from imblearn.pipeline import Pipeline
-    from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import cross_val_score, StratifiedKFold
-
-    # Defina o modelo
-    model = LogisticRegression()
-
-    # Defina o método de oversampling
-    smote = SMOTE()
-
-    # Crie uma pipeline com o método de oversampling e o modelo
-    pipeline = Pipeline([('SMOTE', smote), ('Random Forest', model)])
-
-    # Defina o seletor de recursos
-    efs = EFS(pipeline, min_features=1, max_features=5, scoring='roc_auc', cv=5)
-
-    # Ajuste o seletor de recursos aos dados
-    efs = efs.fit(X, Y)
-
-    # Imprima as melhores características encontradas
-    print('Best features:', efs.best_idx_)
-
 if __name__ == "__main__":
     main()
