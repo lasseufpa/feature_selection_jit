@@ -45,6 +45,8 @@ print("Best ROC AUC score: ", grid.best_score_)
 
 # Obtenha os resultados do GridSearchCV
 results = grid.cv_results_
+results_df = pd.DataFrame(results)
+results_df.to_csv('grid_search_results_svm.csv', index=False)
 
 # Extraia as pontuações de ROC AUC e os parâmetros correspondentes
 mean_test_scores = results['mean_test_score']
