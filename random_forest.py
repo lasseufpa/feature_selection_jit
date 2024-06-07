@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
@@ -7,9 +10,6 @@ from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
-# Definir backend 'Agg' para evitar problemas de servidor gráfico
-import matplotlib
-matplotlib.use('Agg')
 
 # Função de normalização de cores personalizada para centralizar a cor na média das pontuações
 class MidpointNormalize(Normalize):
