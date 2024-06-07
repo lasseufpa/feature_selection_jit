@@ -29,10 +29,6 @@ def combine_sampling(X, Y):
     X, Y = smt.fit_resample(X, Y)
     return X, Y
 
-def model_randomforest(X, Y):
-
-    return model   
-
 def mutual_info(X, Y):
     mi = mutual_info_classif(X, Y)
     mi = pd.Series(mi)
