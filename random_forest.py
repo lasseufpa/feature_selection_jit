@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit, train_test_split
 from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
@@ -28,6 +28,8 @@ data = pd.read_csv('src/features.csv')
 X = data.drop(columns=['label', 'commit'])
 Y = data['label']
 
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+
 # Definir SMOTE e modelo Random Forest
 smote = SMOTE(random_state=42)
 model = RandomForestClassifier(random_state=42)
@@ -49,7 +51,7 @@ cv = StratifiedShuffleSplit(n_splits=5, test_size=0.3, random_state=42)
 
 # Configurar e executar GridSearch
 grid = GridSearchCV(pipeline, param_grid=param_grid, cv=cv, scoring='roc_auc', n_jobs=1)
-grid.fit(X, Y)
+grid.fit(X_train, Y_train)
 
 # Verificar os melhores parâmetros encontrados
 print("Best parameters found: ", grid.best_params_)
