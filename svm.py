@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import pandas as pd
 from imblearn.over_sampling import SMOTE
@@ -7,6 +10,7 @@ from sklearn.svm import SVC
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
+# Função de normalização de cores personalizada para centralizar a cor na média das pontuações
 class MidpointNormalize(Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         self.midpoint = midpoint
@@ -18,32 +22,26 @@ class MidpointNormalize(Normalize):
         normalized_value = np.ma.masked_array(np.interp(value, [self.vmin, self.midpoint, self.vmax], [0, normalized_min, normalized_max]))
         return normalized_value
 
-
+# Carregar os dados
 data = pd.read_csv('src/features.csv')
-X = data.drop(columns=['label','commit'])
+X = data.drop(columns=['label', 'commit'])
 Y = data['label']
 
 smote = SMOTE(random_state=42)
 model = SVC()
 
-pipeline = Pipeline([('SMOTE', smote), ('SVM', model)])
 
+pipeline = Pipeline([('SMOTE', smote), ('SVM', model)])
 C_range = np.logspace(-2, 10, 13)
 gamma_range = np.logspace(-9, 3, 13)
-param_grid = dict(SVC__gamma=gamma_range, SVC__C=C_range)
-
+param_grid = {'SVM__gamma': gamma_range, 'SVM__C': C_range}
 cv = StratifiedShuffleSplit(n_splits=5, test_size=0.3, random_state=42)
 grid = GridSearchCV(pipeline, param_grid=param_grid, cv=cv, scoring='roc_auc', n_jobs=1)
 grid.fit(X, Y)
 
-print(
-    "Os melhores paramentros são: %s com uma pontuação de ROC-AUC:%0.2f"
-    % (grid.best_params_, grid.best_score_)
-)
-print(f'Best Roc Auc: {grid.best_score_}')
-
-
-'''Vizualização dos Parametros'''
+# Verificar os melhores parâmetros encontrados
+print("Best parameters found: ", grid.best_params_)
+print("Best ROC AUC score: ", grid.best_score_)
 
 # Obtenha os resultados do GridSearchCV
 results = grid.cv_results_
