@@ -6,27 +6,15 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from util.preprocess import preprocess
 from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import TomekLinks
-from imblearn.combine import SMOTETomek
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import mutual_info_classif
 from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
-
+from sklearn.metrics import roc_auc_score, classification_report
 
 
 def oversampling(X, Y):
     sm = SMOTE(random_state=42)
     X, Y = sm.fit_resample(X, Y)
-    return X, Y
-
-def undersampling(X, Y):
-    tl = TomekLinks()
-    X, Y = tl.fit_resample(X, Y)
-    return X, Y
-
-def combine_sampling(X, Y):
-    smt = SMOTETomek(random_state=42)
-    X, Y = smt.fit_resample(X, Y)
     return X, Y
 
 def mutual_info(X, Y):
@@ -52,19 +40,31 @@ def main():
     data = preprocess(data)
     
     '''Splitting the data into training and testing sets.'''
+
     X = data.drop(columns=['commit','label'])
-    # X =  data[['number_unique_changes', 'lines_of_code_added']]
     Y = data['label']
     X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.30, random_state=42)
     X_train, Y_train = oversampling(X_train, Y_train)
     
-    model = RandomForestClassifier(n_estimators=500, random_state=42, n_jobs=-1)
+    model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
+                                   min_samples_split=5, min_samples_leaf=4)
     model.fit(X_train, Y_train)
-    feature_importances = model.feature_importances_
-    feature_importances = pd.Series(feature_importances,
-                                    index=X.columns)
-    feature_importances.sort_values(ascending=False, inplace=True)
-    feature_importances.to_csv('src/Results/RandomForest/feature_importances.csv')
+    y_pred = model.predict(X_test)
+    print(f'\n\n Resultado usando todas as features:\n')
+    print(f'{classification_report(Y_test, y_pred, tagert_names = ['Não introduz Bug', 'Introduz Bug'],)}')
+    print(f'Score:{roc_auc_score(Y_test, y_pred)}')
+
+    X = data[['number_unique_changes','lines_of_code_added','files_churned','entropy']]
+    Y = data['label']
+    X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.30, random_state=42)
+    X_train, Y_train = oversampling(X_train, Y_train)
+    model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
+                                   min_samples_split=5, min_samples_leaf=4)
+    model.fit(X_train, Y_train)
+    y_pred = model.predict(X_test)
+    print(f'\n\nResultado usando as 4 features mais importantes: \n')
+    print(f'Score:{roc_auc_score(Y_test, y_pred)}')
+
 
 if __name__ == "__main__":
     main()

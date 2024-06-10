@@ -61,29 +61,3 @@ print("Best ROC AUC score: ", grid.best_score_)
 results = grid.cv_results_
 results_df = pd.DataFrame(results)
 results_df.to_csv('grid_search_results_random_forest.csv')
-
-# Plotagem (por exemplo, podemos plotar os n_estimators vs. max_depth)
-scores_matrix = np.array(results['mean_test_score']).reshape(len(param_grid['RF__n_estimators']),
-                                                             len(param_grid['RF__max_depth']))
-
-# Plotagem
-plt.figure(figsize=(8, 6))
-plt.subplots_adjust(left=0.2, right=0.95, bottom=0.15, top=0.95)
-plt.imshow(
-    scores_matrix,
-    interpolation="nearest",
-    cmap=plt.cm.hot,
-    norm=MidpointNormalize(vmin=0.2, midpoint=0.92)
-)
-plt.xlabel("max_depth")
-plt.ylabel("n_estimators")
-plt.colorbar()
-plt.xticks(np.arange(len(param_grid['RF__max_depth'])), param_grid['RF__max_depth'], rotation=45)
-plt.yticks(np.arange(len(param_grid['RF__n_estimators'])), param_grid['RF__n_estimators'])
-plt.title("ROC AUC Scores for different n_estimators and max_depth")
-
-# Salvar a figura em PDF
-plt.savefig('roc_auc_heatmap_rf.pdf', format='pdf')
-
-# Fechar a figura
-plt.close()
