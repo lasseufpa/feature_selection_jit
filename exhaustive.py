@@ -37,7 +37,7 @@ def main():
 
     # Defina o seletor de recursos
     efs = EFS(model, min_features=1,
-              max_features=1,
+              max_features=12,
               scoring='roc_auc',
               cv=5,
               n_jobs=1)
