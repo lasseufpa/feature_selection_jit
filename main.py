@@ -4,26 +4,11 @@ import numpy as np
 # import seaborn as sns
 # import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from util.preprocess import preprocess
 from imblearn.over_sampling import SMOTE
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import mutual_info_classif
-from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
-from sklearn.metrics import roc_auc_score, classification_report
-
-
-def oversampling(X, Y):
-    sm = SMOTE(random_state=42)
-    X, Y = sm.fit_resample(X, Y)
-    return X, Y
-
-def mutual_info(X, Y):
-    mi = mutual_info_classif(X, Y)
-    mi = pd.Series(mi)
-    mi.index = X.columns
-    mi = mi.sort_values(ascending=False)
-    # mi.to_csv('mutual_info.csv')
-    print(mi)
+from sklearn.metrics import roc_auc_score, classification_report, f1_score, precision_score, recall_score
+from imblearn.pipeline import make_pipeline
+from sklearn.model_selection import StratifiedKFold
 
 def main():
     parse = argparse.ArgumentParser(description="Dataset of the features")
@@ -34,37 +19,34 @@ def main():
         data = pd.read_csv(args.data)
     except:
         print("File not found")
-        args.data = input("Digite o caminho correto do arquivo: ")
+        args.data = input("Digite o caminho do arquivo: ")
         data = pd.read_csv(args.data)
-
-    data = preprocess(data)
     
-    '''Splitting the data into training and testing sets.'''
-
     X = data.drop(columns=['commit','label'])
     Y = data['label']
-    X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.30, random_state=42)
-    X_train, Y_train = oversampling(X_train, Y_train)
-    
     model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
                                    min_samples_split=5, min_samples_leaf=4)
-    model.fit(X_train, Y_train)
-    y_pred = model.predict(X_test)
-    print(f'\n\n Resultado usando todas as features:\n')
-    print(f'{classification_report(Y_test, y_pred, tagert_names = ['Não introduz Bug', 'Introduz Bug'],)}')
-    print(f'Score:{roc_auc_score(Y_test, y_pred)}')
+    smote = SMOTE(random_state=42)
+    pipeline = make_pipeline(smote, model)
+    cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=True)
+    metrics_df = pd.DataFrame(columns=['Fold', 'Precision', 'Recall', 'F1-score', 'Roc_auc_score'])
 
-    X = data[['number_unique_changes','lines_of_code_added','files_churned','entropy']]
-    Y = data['label']
-    X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.30, random_state=42)
-    X_train, Y_train = oversampling(X_train, Y_train)
-    model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
-                                   min_samples_split=5, min_samples_leaf=4)
-    model.fit(X_train, Y_train)
-    y_pred = model.predict(X_test)
-    print(f'\n\nResultado usando as 4 features mais importantes: \n')
-    print(f'Score:{roc_auc_score(Y_test, y_pred)}')
-
-
+    counter = 1
+    for train_index, test_index in cv.split(X, Y):
+        X_train_cv, X_test_cv = X.iloc[train_index], X.iloc[test_index]
+        Y_train_cv, Y_test_cv = Y.iloc[train_index], Y.iloc[test_index]
+        pipeline.fit(X_train_cv, Y_train_cv)
+        y_pred = pipeline.predict(X_test_cv)
+        features_importance = pipeline.named_steps['randomforestclassifier'].feature_importances_
+        features_importance = pd.DataFrame(features_importance, index=X.columns, columns=['importance'])
+        features_importance = features_importance.sort_values(by='importance', ascending=False)
+        features_importance.to_csv(f'src/Results/RandomForest/features_importance_{counter}.csv')
+        metrics_df = metrics_df._append({'Fold': counter,
+                        'Precision': precision_score(Y_test_cv, y_pred),
+                        'Recall':recall_score(Y_test_cv, y_pred),
+                        'F1-score':f1_score(Y_test_cv, y_pred),
+                        'Roc_auc_score':roc_auc_score(Y_test_cv,y_pred)}, ignore_index=True)
+        counter += 1
+    metrics_df.to_csv('src/Results/RandomForest/metrics.csv')
 if __name__ == "__main__":
     main()
