@@ -147,7 +147,7 @@ def cross_validation_smote(X,Y, top_k_features):
     
     metrics_df.to_csv('src/Results/RandomForest/metrics_best_features_smote.csv', index =  False)
 
-# def logis
+
 def main():
     parse = argparse.ArgumentParser(description="Dataset of the features")
     parse.add_argument("--data", type=str, required=True, help="Path/to/data.csv")
