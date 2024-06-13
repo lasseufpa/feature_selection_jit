@@ -6,7 +6,7 @@ from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
 import pandas as pd
 
 
-def exhaustive(X_train, Y_train):
+def exhaustive(X, Y):
     model = LogisticRegression(max_iter=1000,random_state=42)
     smote = SMOTE(random_state=42)
     pipeline = Pipeline([('SMOTE', smote), ('Logistic Regression', model)])
@@ -15,7 +15,7 @@ def exhaustive(X_train, Y_train):
             scoring='roc_auc',
             cv=5,
             n_jobs=1)
-    efs = efs.fit(X_train, Y_train)
+    efs = efs.fit(X, Y)
     return efs
 
 
