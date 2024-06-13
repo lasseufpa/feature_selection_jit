@@ -6,6 +6,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
 from imblearn.pipeline import make_pipeline
 from sklearn.model_selection import StratifiedKFold
+from imblearn.pipeline import Pipeline
+
 
 def pipeline_smote(X,Y):
     model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
@@ -149,10 +151,65 @@ def logistic_regression(X,Y):
     model = LogisticRegression(max_iter=1000,random_state=42)
     cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=True)
     metrics_df = pd.DataFrame(columns=['Fold', 'Precision', 'Recall', 'F1-score', 'Roc_auc_score'])
-
+    counter = 1
+    for train_index, test_index in cv.split(X, Y):
+        X_train_cv, X_test_cv = X.iloc[train_index], X.iloc[test_index]
+        Y_train_cv, Y_test_cv = Y.iloc[train_index], Y.iloc[test_index]
+        model.fit(X_train_cv, Y_train_cv)
+        y_pred = model.predict(X_test_cv)
+        metrics_df = metrics_df._append({'Fold': counter,
+                        'Precision': precision_score(Y_test_cv, y_pred),
+                        'Recall':recall_score(Y_test_cv, y_pred),
+                        'F1-score':f1_score(Y_test_cv, y_pred),
+                        'Roc_auc_score':roc_auc_score(Y_test_cv,y_pred)}, ignore_index=True)
+        counter += 1
+    metrics_df = metrics_df._append({'Fold': 'Mean',
+                                     'Precision': metrics_df['Precision'].mean(),
+                                     'Recall': metrics_df['Recall'].mean(),
+                                     'F1-score': metrics_df['F1-score'].mean(),
+                                     'Roc_auc_score': metrics_df['Roc_auc_score'].mean()}, ignore_index=True)
+    metrics_df = metrics_df._append({'Fold': 'Std',
+                                     'Precision': metrics_df['Precision'].std(),
+                                     'Recall': metrics_df['Recall'].std(),
+                                     'F1-score': metrics_df['F1-score'].std(),
+                                     'Roc_auc_score': metrics_df['Roc_auc_score'].std()}, ignore_index=True)
+    metrics_df.to_csv('src/Results/LogisticRegression/metrics.csv', index =  False)
 
 def logistic_regression_smote(X,Y):
-    print("Logistic Regression with SMOTE")
+    model = LogisticRegression(max_iter=1000,random_state=42)
+    smote = SMOTE(random_state=42)
+    pipeline = Pipeline([('SMOTE', smote), ('Logistic Regression', model)])
+    cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=True)
+    metrics_df = pd.DataFrame(columns=['Fold', 'Precision', 'Recall', 'F1-score', 'Roc_auc_score'])
+    counter = 1
+    for train_index, test_index in cv.split(X, Y):
+        X_train_cv, X_test_cv = X.iloc[train_index], X.iloc[test_index]
+        Y_train_cv, Y_test_cv = Y.iloc[train_index], Y.iloc[test_index]
+        pipeline.fit(X_train_cv, Y_train_cv)
+        y_pred = pipeline.predict(X_test_cv)
+        metrics_df = metrics_df._append({'Fold': counter,
+                        'Precision': precision_score(Y_test_cv, y_pred),
+                        'Recall':recall_score(Y_test_cv, y_pred),
+                        'F1-score':f1_score(Y_test_cv, y_pred),
+                        'Roc_auc_score':roc_auc_score(Y_test_cv,y_pred)}, ignore_index=True)
+        counter += 1
+    metrics_df = metrics_df._append({'Fold': 'Mean',
+                                     'Precision': metrics_df['Precision'].mean(),
+                                     'Recall': metrics_df['Recall'].mean(),
+                                     'F1-score': metrics_df['F1-score'].mean(),
+                                     'Roc_auc_score': metrics_df['Roc_auc_score'].mean()}, ignore_index=True)
+    metrics_df = metrics_df._append({'Fold': 'Std',
+                                     'Precision': metrics_df['Precision'].std(),
+                                     'Recall': metrics_df['Recall'].std(),
+                                     'F1-score': metrics_df['F1-score'].std(),
+                                     'Roc_auc_score': metrics_df['Roc_auc_score'].std()}, ignore_index=True)
+    metrics_df.to_csv('src/Results/LogisticRegression/metrics_smote.csv', index =  False)
+
+def cross_validation_logistic_regression(X,Y, top_k_features):
+    print(top_k_features)
+
+def cross_validation_logistic_regression_smote(X,Y, top_k_features):
+    print(top_k_features)
 
 def main():
     parse = argparse.ArgumentParser(description="Dataset of the features")
