@@ -444,9 +444,9 @@ def main():
     ######################## Decision Tree ######################
     # decision_tree_cross_validation(X,Y)
     # decision_tree_cross_validation_smote(X,Y)
-    top_k_features = ['number_unique_changes','lines_of_code_added', 'number_of_authors', 'line_of_code_old']
+    # top_k_features = ['number_unique_changes','lines_of_code_added', 'number_of_authors', 'line_of_code_old']
     # decision_tree_cross_validation_top_k_features(X,Y, top_k_features)
-    decision_tree_cross_validation_top_k_features_smote(X,Y, top_k_features)
+    # decision_tree_cross_validation_top_k_features_smote(X,Y, top_k_features)
 
 
 if __name__ == "__main__":
