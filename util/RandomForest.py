@@ -40,7 +40,7 @@ def save_metrics(X,Y,model,smote=False,top_features=None):
     else:
         pipeline = model
     cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=True)
-    # metrics_df = pd.DataFrame(columns=['Fold', 'Precision', 'Recall', 'F1-score', 'Roc_auc_score'])
+    metrics_df = pd.DataFrame(columns=['Fold', 'Precision', 'Recall', 'F1-score', 'Roc_auc_score'])
     
     counter = 1
     for train_index, test_index in cv.split(X, Y):
@@ -53,9 +53,9 @@ def save_metrics(X,Y,model,smote=False,top_features=None):
                         'Recall':recall_score(Y_test_cv, y_pred),
                         'F1-score':f1_score(Y_test_cv, y_pred),
                         'Roc_auc_score':roc_auc_score(Y_test_cv,y_pred)}, ignore_index=True)
-        # feature_importance = pipeline.named_steps['randomforestclassifier'].feature_importances_
-        # feature_importance = pd.DataFrame(feature_importance, index = X.columns, columns=['importance']).sort_values('importance', ascending=False)
-        # feature_importance.to_csv(f'src/Results/RandomForest/features_importances/features_importance_{counter}.csv', index =  True)
+        feature_importance = pipeline.named_steps['randomforestclassifier'].feature_importances_
+        feature_importance = pd.DataFrame(feature_importance, index = X.columns, columns=['importance']).sort_values('importance', ascending=False)
+        feature_importance.to_csv(f'src/Results/RandomForest/features_importances/features_importance_{counter}_normalized.csv', index =  True)
         counter += 1
 
     metrics_df = metrics_df._append({'Fold': 'Mean',
