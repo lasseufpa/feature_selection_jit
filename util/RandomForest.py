@@ -1,4 +1,5 @@
 import pandas as pd 
+import os
 from imblearn.over_sampling import SMOTE
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
@@ -16,7 +17,7 @@ def random_forest_all_feature_smote(X,Y):
 def random_forest_all_feature(X,Y):
     model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
                                min_samples_split=5, min_samples_leaf=4, criterion='entropy')
-    save_metrics(X,Y,model,save_features_importance=True)
+    save_metrics(X,Y,model)
 
 def random_forest_top_feature(X,Y, top_features):
     X = X[top_features]
@@ -28,6 +29,7 @@ def random_forest_top_feature_smote(X,Y, top_features):
     X = X[top_features]
     model = RandomForestClassifier(n_estimators=500, random_state=42,max_features='log2',max_depth=90,
                                min_samples_split=5, min_samples_leaf=4, criterion='entropy')
+    
     save_metrics(X = X ,Y = Y,model = model,smote = True,top_features = top_features)
 
 
@@ -53,6 +55,9 @@ def save_metrics(X,Y,model,smote=False,top_features=None):
                         'Recall':recall_score(Y_test_cv, y_pred),
                         'F1-score':f1_score(Y_test_cv, y_pred),
                         'Roc_auc_score':roc_auc_score(Y_test_cv,y_pred)}, ignore_index=True)
+        if os.path.exists(f'src/Results/RandomForest/features_importances/features_importance_{counter}_normalized.csv'):
+            counter += 1
+            continue
         feature_importance = pipeline.named_steps['randomforestclassifier'].feature_importances_
         feature_importance = pd.DataFrame(feature_importance, index = X.columns, columns=['importance']).sort_values('importance', ascending=False)
         feature_importance.to_csv(f'src/Results/RandomForest/features_importances/features_importance_{counter}_normalized.csv', index =  True)
@@ -70,13 +75,13 @@ def save_metrics(X,Y,model,smote=False,top_features=None):
                                      'Roc_auc_score': metrics_df['Roc_auc_score'].std()}, ignore_index=True)
     
     if smote and top_features:
-        metrics_df.to_csv('src/Results/RandomForest/metrics_best_features_smote.csv', index =  False)
+        metrics_df.to_csv('src/Results/RandomForest/metrics_best_features_smote_normalized.csv', index =  False)
 
     elif top_features:
-        metrics_df.to_csv('src/Results/RandomForest/metrics_best_features.csv', index =  False)
+        metrics_df.to_csv('src/Results/RandomForest/metrics_best_features_normalized.csv', index =  False)
 
     elif smote:
-        metrics_df.to_csv('src/Results/RandomForest/metrics_smote.csv', index =  False)
+        metrics_df.to_csv('src/Results/RandomForest/metrics_smote_normalized.csv', index =  False)
 
     else:
-        metrics_df.to_csv('src/Results/RandomForest/metrics.csv', index =  False)
+        metrics_df.to_csv('src/Results/RandomForest/metrics_normalized.csv', index =  False)
