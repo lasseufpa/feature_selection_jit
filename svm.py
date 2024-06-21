@@ -16,7 +16,7 @@ model = SVC()
 
 
 pipeline = Pipeline([('SMOTE', smote), ('SVM', model)])
-C_range = np.logspace(-2, 10, 13)
+C_range = np.logspace(-8, 4, 13)
 gamma_range = np.logspace(-9, 3, 13)
 param_grid = {'SVM__gamma': gamma_range, 'SVM__C': C_range}
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
