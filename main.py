@@ -1,6 +1,6 @@
 import pandas as pd 
-import argparse
-from util.RandomForest import random_forest_all_feature, random_forest_all_feature_smote, random_forest_top_feature, random_forest_top_feature_smote    
+import argparse 
+from util.SupportVectorMachine import support_vector_machine_all_feature, support_vector_machine_all_feature_smote
 
 
 def main():
@@ -20,9 +20,8 @@ def main():
     # random_forest_all_feature_smote(X,Y)
     # random_forest_all_feature(X,Y)
     top_features = ['number_unique_changes','lines_of_code_added','files_churned','number_of_authors']
-    random_forest_top_feature_smote(X,Y,top_features=top_features)
-    random_forest_top_feature(X,Y,top_features=top_features)
-
+    support_vector_machine_all_feature(X,Y)
+    support_vector_machine_all_feature_smote(X,Y)
     
 
 if __name__ == "__main__":
