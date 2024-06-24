@@ -49,7 +49,7 @@ import pandas as pd
 from tabulate import tabulate
 import glob
 
-files = glob.glob("src/Results/RandomForest/metrics_*normalized.csv")
+files = glob.glob("src/Results/SupportVectorMachine/metrics*.csv")
 files.sort()
 for file in files:
     df = pd.read_csv(file)
@@ -85,31 +85,31 @@ for file in files:
 # import glob
 
 # # Obter todos os arquivos com informações de classificação
-files = glob.glob('src/Results/RandomForest/features_importances/features_importance_?_normalized.csv')
+# files = glob.glob('src/Results/RandomForest/features_importances/features_importance_?_normalized.csv')
 
 # Inicializar um dicionário para armazenar os ranks dos itens
-item_ranks = {}
+# item_ranks = {}
 
 # Função para ler um arquivo e atualizar o dicionário de ranks
-def ler_arquivo_e_atualizar_ranks(nome_arquivo):
-    df = pd.read_csv(nome_arquivo, header=None)  # Lê o arquivo sem header
-    df = df.iloc[1:-1]
-    for rank, item in enumerate(df[0]):
-        if item not in item_ranks:
-            item_ranks[item] = []
-        item_ranks[item].append(rank + 1)  # Rank começa em 1, não 0
+# def ler_arquivo_e_atualizar_ranks(nome_arquivo):
+#     df = pd.read_csv(nome_arquivo, header=None)  # Lê o arquivo sem header
+#     df = df.iloc[1:-1]
+#     for rank, item in enumerate(df[0]):
+#         if item not in item_ranks:
+#             item_ranks[item] = []
+#         item_ranks[item].append(rank + 1)  # Rank começa em 1, não 0
 
-# Lendo cada arquivo e atualizando o dicionário de ranks
-for arquivo in files:
-    ler_arquivo_e_atualizar_ranks(arquivo)
+# # Lendo cada arquivo e atualizando o dicionário de ranks
+# for arquivo in files:
+#     ler_arquivo_e_atualizar_ranks(arquivo)
 
-# Calculando o ranking médio para cada item
-ranking_medio = {item: sum(ranks) / len(ranks) for item, ranks in item_ranks.items()}
+# # Calculando o ranking médio para cada item
+# ranking_medio = {item: sum(ranks) / len(ranks) for item, ranks in item_ranks.items()}
 
-# Ordenando os itens pelo ranking médio
-ranking_ordenado = sorted(ranking_medio.items(), key=lambda x: x[1])
+# # Ordenando os itens pelo ranking médio
+# ranking_ordenado = sorted(ranking_medio.items(), key=lambda x: x[1])
 
-# Exibindo o ranking médio dos itens
-print("Ranking médio das features:")
-for item, rank in ranking_ordenado:
-    print(f'Item: {item}, Ranking Médio: {rank:.2f}')
+# # Exibindo o ranking médio dos itens
+# print("Ranking médio das features:")
+# for item, rank in ranking_ordenado:
+#     print(f'Item: {item}, Ranking Médio: {rank:.2f}')

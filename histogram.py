@@ -17,6 +17,14 @@ def bihist(ax, upatches, lpatches, orientation='vertical'):
     ax.relim()
     ax.autoscale_view()
 
+def calculate_iqr_min_max(data):
+    Q1 = np.percentile(data, 25)
+    Q3 = np.percentile(data, 75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    filtered_data = data[(data >= lower_bound) & (data <= upper_bound)]
+    return filtered_data.min(), filtered_data.max()
 
 
 if __name__ == '__main__':
@@ -31,9 +39,10 @@ if __name__ == '__main__':
     for column in x1.columns:
         orientation = 'vertical'
         fig = plt.figure()
-        
-        min_val = min(min(x1[column]), min(x2[column]))
-        max_val = max(max(x1[column]), max(x2[column]))
+        min_val1, max_val1 = calculate_iqr_min_max(x1[column])
+        min_val2, max_val2 = calculate_iqr_min_max(x2[column])
+        min_val = min(min_val1, min_val2)
+        max_val = max(max_val1, max_val2)
         
         bins = np.linspace(min_val, max_val, 30)
         

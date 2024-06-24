@@ -68,7 +68,7 @@ def save_metrics(X,Y,model,smote = False, top_features =  None):
         metrics_df.to_csv('src/Results/SupportVectorMachine/metrics_best_features.csv', index =  False)
 
     elif smote:
-        metrics_df.to_csv('src/Results/SupportVectorMachine/metrics_smote.csv', index =  False)
+        metrics_df.to_csv('src/Results/SupportVectorMachine/metrics_smote_normalized.csv', index =  False)
 
     else:
-        metrics_df.to_csv('src/Results/SupportVectorMachine/metrics.csv', index =  False)
+        metrics_df.to_csv('src/Results/SupportVectorMachine/metrics_normalized.csv', index =  False)
