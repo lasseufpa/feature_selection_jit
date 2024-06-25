@@ -29,7 +29,7 @@ def calculate_iqr_min_max(data):
 
 if __name__ == '__main__':
     import numpy as np
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
     import pandas as pd
 
     df = pd.read_csv('src/features.csv')
@@ -37,13 +37,30 @@ if __name__ == '__main__':
     x2 = df[df['label'] == 0].drop(columns=['label', 'commit'])
 
     for column in x1.columns:
+        if not column == 'rexp':
+            continue
+        min_val1, max_val1 = calculate_iqr_min_max(x1[column])
+        min_val2, max_val2 = calculate_iqr_min_max(x2[column])
+        min_val = min(min_val1, min_val2)
+        max_val = max(max_val1, max_val2)
+        count = 0
+        for line in x1[column]:
+            if line > max_val:
+                count += 1
+        for line in x2[column]:
+            if line > max_val:
+                count += 1
+        print(count)
+        break
         orientation = 'vertical'
         fig = plt.figure()
         min_val1, max_val1 = calculate_iqr_min_max(x1[column])
         min_val2, max_val2 = calculate_iqr_min_max(x2[column])
         min_val = min(min_val1, min_val2)
         max_val = max(max_val1, max_val2)
-        
+        # min_val = min(min(x1[column]), min(x2[column]))
+        # max_val = max(max(x1[column]), max(x2[column]))
+        print(max_val)
         bins = np.linspace(min_val, max_val, 30)
         
         ax2 = fig.add_subplot(1, 1, 1, title=column + " Bi-histogram")
@@ -51,15 +68,16 @@ if __name__ == '__main__':
                              histtype='bar',
                              color='b', alpha=0.5, orientation=orientation,
                              label="Not Bug",
-                             density=True)
+                             density=False)
         n2, b, p2 = ax2.hist(x1[column], bins=bins,
                              histtype='bar',
                              color='r', alpha=0.5, orientation=orientation,
                              label="Bug",
-                             density=True)
+                             density=False)
         bihist(ax2, p1, p2, orientation=orientation)
         ax2.legend()
-        plt.savefig(f"{column}_bihistogram.png", format="png", bbox_inches="tight")
+        plt.show()
+        # plt.savefig(f"{column}_bihistogram.png", format="png", bbox_inches="tight")
         plt.close(fig)
         # plt.show()
         # break
